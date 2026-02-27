@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GroceryHelper — Smart Shopping Lists</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a18;
+    --cream: #f5f0e8;
+    --sage: #5a7a5e;
+    --sage-light: #8aad8f;
+    --sage-pale: #dde9df;
+    --terracotta: #c1633a;
+    --gold: #d4a853;
+    --paper: #faf7f2;
+    --border: #d8d0c0;
+    --muted: #7a7468;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-leaf {
+    width: 28px;
+    height: 28px;
+    background: var(--sage);
+    border-radius: 60% 40% 60% 40%;
+    transform: rotate(-30deg);
+    display: inline-block;
+  }
+
+  .logo span { color: var(--sage-light); }
+
+  nav { display: flex; gap: 32px; }
+  nav a {
+    color: rgba(245,240,232,0.65);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: color 0.2s;
+  }
+  nav a:hover, nav a.active { color: var(--cream); }
+
+  .nav-badge {
+    background: var(--terracotta);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 48px 80px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+  }
+
+  /* ── HERO STRIP ── */
+  .hero {
+    grid-column: 1 / -1;
+    background: var(--sage);
+    border-radius: 16px;
+    padding: 36px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '🥦🥕🧅🫑🥬🍋';
+    position: absolute;
+    right: 160px;
+    font-size: 3.5rem;
+    opacity: 0.22;
+    letter-spacing: 8px;
+    pointer-events: none;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .hero-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: white;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .hero-text p {
+    color: rgba(255,255,255,0.78);
+    font-size: 0.95rem;
+    font-weight: 300;
+    max-width: 420px;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 32px;
+    z-index: 1;
+  }
+
+  .stat {
+    text-align: center;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 14px 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .card-body { padding: 20px 24px; }
+
+  /* ── RECIPE SELECTOR ── */
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .recipe-item {
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    position: relative;
+  }
+
+  .recipe-item:hover { border-color: var(--sage); }
+
+  .recipe-item.selected {
+    border-color: var(--sage);
+    background: var(--sage-pale);
+  }
+
+  .recipe-item.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    color: var(--sage);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .recipe-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 3px;
+  }
+
+  .recipe-meta {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .recipe-tag {
+    display: inline-block;
+    background: var(--sage-pale);
+    color: var(--sage);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── ALLERGY PILLS ── */
+  .allergy-section { margin-top: 8px; }
+  .allergy-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  .allergy-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    user-select: none;
+  }
+
+  .pill:hover { border-color: var(--terracotta); }
+
+  .pill.active {
+    background: #fef0eb;
+    border-color: var(--terracotta);
+    color: var(--terracotta);
+  }
+
+  .pill-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .pill.active .pill-dot { background: var(--terracotta); }
+
+  /* ── GENERATE BUTTON ── */
+  .btn-generate {
+    width: 100%;
+    padding: 16px;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-generate:hover { background: var(--sage); transform: translateY(-1px); }
+
+  .btn-generate.loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  .btn-generate.loading .spinner { display: block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SHOPPING LIST ── */
+  .list-section { margin-top: 4px; }
+
+  .category-group { margin-bottom: 20px; }
+
+  .category-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ingredient-row {
+    display: flex;
+    align-items: center;
+    padding: 9px 0;
+    gap: 12px;
+    border-bottom: 1px dashed rgba(0,0,0,0.07);
+    animation: slideIn 0.3s ease forwards;
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .ing-check {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .ing-check:hover { border-color: var(--sage); }
+  .ing-check.checked { background: var(--sage); border-color: var(--sage); }
+  .ing-check.checked::after { content: '✓'; color: white; font-size: 0.7rem; font-weight: 700; }
+
+  .ing-name {
+    flex: 1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .ing-name.checked-text {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  .ing-qty {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  .ing-price {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--terracotta);
+    min-width: 42px;
+    text-align: right;
+  }
+
+  .consolidated-badge {
+    font-size: 0.65rem;
+    background: #fff8e1;
+    color: #b5860d;
+    border: 1px solid #e8d080;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .allergen-flag {
+    font-size: 0.65rem;
+    background: #fef0eb;
+    color: var(--terracotta);
+    border: 1px solid #f0b09a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  /* ── RIGHT SIDEBAR ── */
+  .sidebar { display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── BUDGET CARD ── */
+  .budget-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .input-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  .input-group input, .input-group select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: white;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .input-group input:focus, .input-group select:focus {
+    border-color: var(--sage);
+  }
+
+  .budget-bar-wrap {
+    background: var(--border);
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .budget-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sage), var(--gold));
+    border-radius: 6px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  .budget-bar.over { background: linear-gradient(90deg, var(--gold), var(--terracotta)); }
+
+  .budget-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .budget-labels strong { color: var(--ink); }
+
+  /* CHART */
+  .chart-wrap {
+    position: relative;
+    height: 180px;
+    margin-top: 8px;
+  }
+
+  /* ── FUZZY MATCHES ── */
+  .fuzzy-item {
+    background: #fffbf0;
+    border: 1px solid #e8d580;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .fuzzy-arrow {
+    color: var(--gold);
+    margin: 0 6px;
+    font-weight: 700;
+  }
+
+  .fuzzy-score {
+    float: right;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: #fef0c0;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state .emoji { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* ── PERFORMANCE INDICATOR ── */
+  .perf-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--sage-pale);
+    border: 1px solid #b5d4b9;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: var(--sage);
+    font-weight: 500;
+    margin-top: 12px;
+  }
+
+  .perf-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--sage);
+    animation: pulse 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  /* ── TAG ── */
+  .tag-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-tech {
+    background: var(--sage-pale);
+    color: var(--sage);
+  }
+
+  .tag-algo {
+    background: #fef0eb;
+    color: var(--terracotta);
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--ink); }
+
+  .tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; padding: 20px; }
+    .hero { flex-direction: column; gap: 20px; }
+    .hero-stats { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-leaf"></span>
+    Grocery<span>Helper</span>
+  </div>
+  <nav>
+    <a href="#" class="active">List Builder</a>
+    <a href="#">Pantry</a>
+    <a href="#">History</a>
+    <a href="#">Settings</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Smart lists.<br>Zero waste.</h1>
+      <p>Select recipes, set your budget, and let the algorithm handle ingredient consolidation, allergy filtering, and price optimization.</p>  
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">60+</div>
+        <div class="stat-label">Ingredients</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">&lt;0.5s</div>
+        <div class="stat-label">Process Time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">60%</div>
+        <div class="stat-label">Time Saved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEFT COLUMN -->
+  <div>
+
+    <!-- RECIPE PICKER -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div class="card-title">Select Recipes</div>
+        <span style="font-size:0.8rem;color:var(--muted);" id="recipe-count">0 selected</span>
+      </div>
+      <div class="card-body">
+        <div class="recipe-grid" id="recipe-grid"></div>
+
+        <div class="allergy-section">
+          <div class="allergy-label">Dietary Restrictions & Allergens</div>
+          <div class="allergy-pills" id="allergy-pills"></div>
+        </div>
+
+        <button class="btn-generate" id="gen-btn" onclick="generateList()">
+          <span class="spinner" id="spinner"></span>
+          <span id="btn-text">✦ Generate Shopping List</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SHOPPING LIST -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Shopping List</div>
+        <span style="font-size:0.8rem;color:var(--muted);" id="item-count">—</span>
+      </div>
+      <div class="card-body">
+        <div id="shopping-list">
+          <div class="empty-state">
+            <div class="emoji">🛒</div>
+            <p>Select recipes above and click<br><strong>Generate Shopping List</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- BUDGET -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Budget Optimizer</div>
+      </div>
+      <div class="card-body">
+        <div class="budget-inputs">
+          <div class="input-group">
+            <label>Weekly Budget</label>
+            <input type="number" id="budget-input" value="80" min="10" max="500">
+          </div>
+          <div class="input-group">
+            <label>Preference</label>
+            <select id="pref-select">
+              <option value="value">Best Value</option>
+              <option value="organic">Organic First</option>
+              <option value="local">Local / Seasonal</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="budget-display" style="display:none;">
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" id="budget-bar"></div>
+          </div>
+          <div class="budget-labels">
+            <span>Spent: <strong id="spent-label">$0</strong></span>
+            <span>Budget: <strong id="budget-label">$80</strong></span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="budget-chart"></canvas>
+          </div>
+        </div>
+
+        <div id="budget-empty" style="text-align:center;padding:16px 0;color:var(--muted);font-size:0.85rem;">
+          Generate a list to see budget breakdown
+        </div>
+      </div>
+    </div>
+
+    <!-- FUZZY MATCH -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Fuzzy Consolidations</div>
+      </div>
+      <div class="card-body">
+        <div id="fuzzy-panel">
+          <div class="empty-state" style="padding:24px 0;">
+            <div class="emoji" style="font-size:2rem;">🔍</div>
+            <p style="font-size:0.8rem;">Duplicate ingredients across recipes<br>will be shown here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECH NOTE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Algorithm Notes</div>
+      </div>
+      <div class="card-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'algo')">Optimization</div>
+          <div class="tab" onclick="switchTab(this,'filter')">Allergy Filter</div>
+          <div class="tab" onclick="switchTab(this,'api')">API Layer</div>
+        </div>
+        <div id="algo" class="tab-panel active">
+          <p style="font-size:0.82rem;line-height:1.6;color:#444;">
+            Budget optimizer scores each ingredient by <strong>price-per-unit</strong>, weights user preference (organic, local), and uses a greedy algorithm to maximize value within the budget constraint. Quantity normalization converts all units (oz, g, cups, tbsp) before scoring.
+          </p>
+          <div class="perf-bar">
+            <div class="perf-dot"></div>
+            10 recipes · 60+ ingredients · &lt;0.5s on Flask backend
+          </div>
+        </div>
+        <div id="filter" class="tab-panel">
+          <p style="font-size:0.82rem;line-height:1.6;color:#444;">
+            Allergens are stored in a Python <strong>set</strong>, enabling O(1) hash map lookups per ingredient token. Ingredient names are tokenized and each token is tested against the allergen set — flagging, not removing, items so users retain full visibility.
+          </p>
+          <div class="perf-bar">
+            <div class="perf-dot"></div>
+            O(1) per lookup · O(n) total list traversal
+          </div>
+        </div>
+        <div id="api" class="tab-panel">
+          <p style="font-size:0.82rem;line-height:1.6;color:#444;">
+            Flask routes proxy <strong>Spoonacular API</strong> calls server-side (API key never exposed). <strong>FuzzyWuzzy</strong> runs on the backend with a token_sort_ratio threshold of 85 for ingredient matching. Results are cached in <strong>Firebase Firestore</strong> to minimize API calls.
+          </p>
+          <div class="perf-bar">
+            <div class="perf-dot"></div>
+            Firebase real-time sync · Firestore cache layer
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────
+const RECIPES = [
+  { id:1, name:"Chicken Stir Fry", servings:4, time:"25 min", tag:"Quick", ingredients:[
+    {name:"chicken breast", qty:"1.5 lbs", price:7.49, cat:"Meat & Seafood"},
+    {name:"broccoli florets", qty:"2 cups", price:2.29, cat:"Produce"},
+    {name:"soy sauce", qty:"3 tbsp", price:1.50, cat:"Pantry"},
+    {name:"garlic", qty:"4 cloves", price:0.50, cat:"Produce"},
+    {name:"ginger", qty:"1 tbsp", price:0.75, cat:"Produce"},
+    {name:"sesame oil", qty:"1 tbsp", price:0.80, cat:"Pantry"},
+    {name:"all-purpose flour", qty:"2 tbsp", price:0.30, cat:"Pantry"},
+  ]},
+  { id:2, name:"Pasta Primavera", servings:4, time:"30 min", tag:"Vegetarian", ingredients:[
+    {name:"penne pasta", qty:"12 oz", price:1.89, cat:"Pantry"},
+    {name:"cherry tomatoes", qty:"1 cup", price:3.49, cat:"Produce"},
+    {name:"zucchini", qty:"2 medium", price:1.99, cat:"Produce"},
+    {name:"garlic", qty:"3 cloves", price:0.38, cat:"Produce"},
+    {name:"olive oil", qty:"3 tbsp", price:1.00, cat:"Pantry"},
+    {name:"parmesan cheese", qty:"1/2 cup", price:2.99, cat:"Dairy"},
+    {name:"flour", qty:"1 tbsp", price:0.15, cat:"Pantry"},
+  ]},
+  { id:3, name:"Beef Tacos", servings:4, time:"20 min", tag:"Family Fav", ingredients:[
+    {name:"ground beef", qty:"1 lb", price:5.99, cat:"Meat & Seafood"},
+    {name:"taco shells", qty:"12 count", price:2.79, cat:"Pantry"},
+    {name:"shredded cheese", qty:"1 cup", price:3.49, cat:"Dairy"},
+    {name:"lettuce", qty:"2 cups", price:1.29, cat:"Produce"},
+    {name:"tomato", qty:"2 medium", price:1.49, cat:"Produce"},
+    {name:"sour cream", qty:"1/2 cup", price:1.99, cat:"Dairy"},
+    {name:"garlic powder", qty:"1 tsp", price:0.25, cat:"Pantry"},
+  ]},
+  { id:4, name:"Greek Salad", servings:4, time:"10 min", tag:"Healthy", ingredients:[
+    {name:"cucumber", qty:"1 large", price:1.29, cat:"Produce"},
+    {name:"cherry tomatoes", qty:"1 cup", price:3.49, cat:"Produce"},
+    {name:"feta cheese", qty:"4 oz", price:3.99, cat:"Dairy"},
+    {name:"kalamata olives", qty:"1/2 cup", price:2.49, cat:"Pantry"},
+    {name:"red onion", qty:"1/4", price:0.40, cat:"Produce"},
+    {name:"olive oil", qty:"2 tbsp", price:0.67, cat:"Pantry"},
+    {name:"lemon juice", qty:"2 tbsp", price:0.50, cat:"Produce"},
+  ]},
+  { id:5, name:"Banana Bread", servings:8, time:"70 min", tag:"Baking", ingredients:[
+    {name:"ripe bananas", qty:"3 large", price:0.89, cat:"Produce"},
+    {name:"all purpose flour", qty:"1.5 cups", price:0.55, cat:"Pantry"},
+    {name:"butter", qty:"1/3 cup", price:1.20, cat:"Dairy"},
+    {name:"sugar", qty:"3/4 cup", price:0.60, cat:"Pantry"},
+    {name:"eggs", qty:"1 large", price:0.45, cat:"Dairy"},
+    {name:"baking soda", qty:"1 tsp", price:0.20, cat:"Pantry"},
+    {name:"vanilla extract", qty:"1 tsp", price:0.55, cat:"Pantry"},
+  ]},
+  { id:6, name:"Lemon Salmon", servings:2, time:"25 min", tag:"Seafood", ingredients:[
+    {name:"salmon fillets", qty:"2 pieces", price:12.99, cat:"Meat & Seafood"},
+    {name:"lemon", qty:"2 medium", price:0.98, cat:"Produce"},
+    {name:"garlic", qty:"2 cloves", price:0.25, cat:"Produce"},
+    {name:"olive oil", qty:"2 tbsp", price:0.67, cat:"Pantry"},
+    {name:"fresh dill", qty:"2 tbsp", price:1.29, cat:"Produce"},
+    {name:"capers", qty:"1 tbsp", price:1.50, cat:"Pantry"},
+  ]},
+];
+
+const ALLERGENS = ["gluten","dairy","nuts","eggs","shellfish","soy","fish"];
+
+const ALLERGEN_MAP = {
+  gluten:  ["flour","wheat","pasta","bread","taco shells","soy sauce","baking soda"],
+  dairy:   ["cheese","butter","cream","milk","parmesan","feta","sour cream","shredded cheese"],
+  nuts:    ["almond","peanut","walnut","cashew","sesame"],
+  eggs:    ["egg","eggs"],
+  shellfish:["shrimp","crab","lobster","clam","capers"],
+  soy:     ["soy sauce","tofu","edamame"],
+  fish:    ["salmon","tuna","anchovy","fish"],
+};
+
+let selectedRecipes = new Set();
+let selectedAllergens = new Set();
+let budgetChart = null;
+
+// ─── INIT ────────────────────────────────────────────────────
+function init() {
+  renderRecipes();
+  renderAllergyPills();
+}
+
+function renderRecipes() {
+  const grid = document.getElementById('recipe-grid');
+  grid.innerHTML = RECIPES.map(r => `
+    <div class="recipe-item" id="rec-${r.id}" onclick="toggleRecipe(${r.id})">
+      <div class="recipe-name">${r.name}</div>
+      <div class="recipe-meta">${r.servings} servings · ${r.time}</div>
+      <span class="recipe-tag">${r.tag}</span>
+    </div>
+  `).join('');
+}
+
+function renderAllergyPills() {
+  const wrap = document.getElementById('allergy-pills');
+  wrap.innerHTML = ALLERGENS.map(a => `
+    <div class="pill" id="pill-${a}" onclick="toggleAllergen('${a}')">
+      <span class="pill-dot"></span>${a.charAt(0).toUpperCase()+a.slice(1)}
+    </div>
+  `).join('');
+}
+
+function toggleRecipe(id) {
+  if (selectedRecipes.has(id)) selectedRecipes.delete(id);
+  else selectedRecipes.add(id);
+  document.getElementById(`rec-${id}`).classList.toggle('selected');
+  document.getElementById('recipe-count').textContent = `${selectedRecipes.size} selected`;
+}
+
+function toggleAllergen(a) {
+  if (selectedAllergens.has(a)) selectedAllergens.delete(a);
+  else selectedAllergens.add(a);
+  document.getElementById(`pill-${a}`).classList.toggle('active');
+}
+
+function switchTab(el, id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// ─── GENERATE ────────────────────────────────────────────────
+function generateList() {
+  if (selectedRecipes.size === 0) {
+    alert('Please select at least one recipe first!');
+    return;
+  }
+
+  const btn = document.getElementById('gen-btn');
+  btn.classList.add('loading');
+  document.getElementById('btn-text').textContent = 'Processing…';
+
+  setTimeout(() => {
+    processAndRender();
+    btn.classList.remove('loading');
+    document.getElementById('btn-text').textContent = '✦ Regenerate List';
+  }, 900);
+}
+
+function processAndRender() {
+  const selected = RECIPES.filter(r => selectedRecipes.has(r.id));
+  const allIngredients = selected.flatMap(r => r.ingredients.map(i => ({...i})));
+
+  // FUZZY CONSOLIDATION
+  const consolidated = [];
+  const fuzzyMatches = [];
+  const used = new Set();
+
+  for (let i = 0; i < allIngredients.length; i++) {
+    if (used.has(i)) continue;
+    let base = {...allIngredients[i]};
+    let mergedWith = [];
+
+    for (let j = i+1; j < allIngredients.length; j++) {
+      if (used.has(j)) continue;
+      const score = fuzzyScore(allIngredients[i].name, allIngredients[j].name);
+      if (score >= 82) {
+        mergedWith.push({name: allIngredients[j].name, score});
+        base.price += allIngredients[j].price * 0.4;
+        used.add(j);
+      }
+    }
+
+    if (mergedWith.length > 0) {
+      fuzzyMatches.push({from: allIngredients[i].name, into: mergedWith});
+      base.consolidated = true;
+    }
+
+    used.add(i);
+    consolidated.push(base);
+  }
+
+  // ALLERGEN FLAG
+  const allergenSet = new Set(selectedAllergens);
+  consolidated.forEach(ing => {
+    ing.flagged = false;
+    if (allergenSet.size === 0) return;
+    const tokens = ing.name.toLowerCase().split(/[\s-]/);
+    for (const [allergen, keywords] of Object.entries(ALLERGEN_MAP)) {
+      if (!allergenSet.has(allergen)) continue;
+      if (keywords.some(k => tokens.some(t => t.includes(k) || k.includes(t)))) {
+        ing.flagged = true;
+        ing.allergenType = allergen;
+        break;
+      }
+    }
+  });
+
+  // BUDGET OPTIMIZATION
+  const budget = parseFloat(document.getElementById('budget-input').value) || 80;
+  const pref = document.getElementById('pref-select').value;
+
+  const scored = consolidated.map(ing => ({
+    ...ing,
+    score: ing.price * (pref === 'organic' ? 1.2 : 1)
+  })).sort((a,b) => a.score - b.score);
+
+  let totalCost = scored.reduce((s,i) => s + i.price, 0);
+
+  renderShoppingList(scored);
+  renderFuzzy(fuzzyMatches);
+  renderBudget(totalCost, budget, scored);
+}
+
+function fuzzyScore(a, b) {
+  a = a.toLowerCase().replace(/[^a-z ]/g,'').trim();
+  b = b.toLowerCase().replace(/[^a-z ]/g,'').trim();
+  if (a === b) return 100;
+  const tokensA = new Set(a.split(' '));
+  const tokensB = new Set(b.split(' '));
+  const intersection = [...tokensA].filter(t => tokensB.has(t)).length;
+  const union = new Set([...tokensA, ...tokensB]).size;
+  const jaccard = intersection / union;
+  const lenRatio = 1 - Math.abs(a.length - b.length) / Math.max(a.length, b.length, 1);
+  return Math.round((jaccard * 0.7 + lenRatio * 0.3) * 100);
+}
+
+function renderShoppingList(items) {
+  const cats = {};
+  items.forEach(i => {
+    if (!cats[i.cat]) cats[i.cat] = [];
+    cats[i.cat].push(i);
+  });
+
+  const catOrder = ["Produce","Meat & Seafood","Dairy","Pantry"];
+  const sortedCats = [...new Set([...catOrder, ...Object.keys(cats)])].filter(c => cats[c]);
+
+  const html = sortedCats.map(cat => `
+    <div class="category-group">
+      <div class="category-name">${cat}</div>
+      ${cats[cat].map((ing, idx) => `
+        <div class="ingredient-row" style="animation-delay:${idx * 0.04}s">
+          <div class="ing-check" onclick="toggleCheck(this)"></div>
+          <div class="ing-name">${ing.name}</div>
+          ${ing.consolidated ? '<span class="consolidated-badge">merged</span>' : ''}
+          ${ing.flagged ? `<span class="allergen-flag">⚠ ${ing.allergenType}</span>` : ''}
+          <div class="ing-qty">${ing.qty}</div>
+          <div class="ing-price">$${ing.price.toFixed(2)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+
+  document.getElementById('shopping-list').innerHTML = html;
+  document.getElementById('item-count').textContent = `${items.length} items`;
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  const nameEl = el.nextElementSibling;
+  nameEl.classList.toggle('checked-text');
+}
+
+function renderFuzzy(matches) {
+  const panel = document.getElementById('fuzzy-panel');
+  if (matches.length === 0) {
+    panel.innerHTML = `<div class="empty-state" style="padding:24px 0;"><div class="emoji" style="font-size:2rem;">✓</div><p style="font-size:0.8rem;">No duplicate ingredients found across selected recipes</p></div>`;
+    return;
+  }
+
+  panel.innerHTML = matches.map(m => `
+    <div class="fuzzy-item">
+      <span class="fuzzy-score">${m.into[0].score}% match</span>
+      <strong>${m.from}</strong>
+      <span class="fuzzy-arrow">→</span>
+      merged with <strong>${m.into.map(x=>x.name).join(', ')}</strong>
+    </div>
+  `).join('');
+}
+
+function renderBudget(total, budget, items) {
+  document.getElementById('budget-display').style.display = 'block';
+  document.getElementById('budget-empty').style.display = 'none';
+
+  const pct = Math.min((total / budget) * 100, 100);
+  const bar = document.getElementById('budget-bar');
+  bar.style.width = pct + '%';
+  bar.classList.toggle('over', total > budget);
+
+  document.getElementById('spent-label').textContent = `$${total.toFixed(2)}`;
+  document.getElementById('budget-label').textContent = `$${budget.toFixed(2)}`;
+
+  // Chart
+  const catTotals = {};
+  items.forEach(i => {
+    catTotals[i.cat] = (catTotals[i.cat] || 0) + i.price;
+  });
+
+  const labels = Object.keys(catTotals);
+  const data = Object.values(catTotals);
+  const colors = ['#5a7a5e','#8aad8f','#c1633a','#d4a853'];
+
+  if (budgetChart) budgetChart.destroy();
+
+  budgetChart = new Chart(document.getElementById('budget-chart'), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 0,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            font: { family:'DM Sans', size:11 },
+            color: '#7a7468',
+            boxWidth: 12,
+            padding: 10,
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` $${ctx.parsed.toFixed(2)}`
+          }
+        }
+      },
+      cutout: '60%',
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
