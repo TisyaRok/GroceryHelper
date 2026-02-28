@@ -30,7 +30,6 @@
     min-height: 100vh;
   }
 
-  /* ── NOISE TEXTURE OVERLAY ── */
   body::before {
     content: '';
     position: fixed;
@@ -41,7 +40,6 @@
     opacity: 0.5;
   }
 
-  /* ── HEADER ── */
   header {
     background: var(--ink);
     color: var(--cream);
@@ -66,8 +64,7 @@
   }
 
   .logo-leaf {
-    width: 28px;
-    height: 28px;
+    width: 28px; height: 28px;
     background: var(--sage);
     border-radius: 60% 40% 60% 40%;
     transform: rotate(-30deg);
@@ -75,6 +72,61 @@
   }
 
   .logo span { color: var(--sage-light); }
+
+  /* ── API KEY BAR ── */
+  .api-key-bar {
+    background: #fffbf0;
+    border-bottom: 1px solid #e8d580;
+    padding: 0 48px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.8rem;
+  }
+
+  .api-key-label {
+    font-weight: 600;
+    color: #7a6a30;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .api-key-input {
+    flex: 1;
+    max-width: 380px;
+    padding: 5px 10px;
+    border: 1.5px solid #e8d580;
+    border-radius: 7px;
+    font-family: 'DM Sans', monospace;
+    font-size: 0.8rem;
+    background: white;
+    outline: none;
+    color: var(--ink);
+    transition: border-color 0.2s;
+  }
+
+  .api-key-input:focus { border-color: var(--gold); }
+
+  .api-key-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .api-key-status.ok { background: var(--sage-pale); color: var(--sage); }
+  .api-key-status.missing { background: #fef0eb; color: var(--terracotta); }
+
+  .api-key-hint {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .api-key-hint a { color: var(--gold); text-decoration: none; }
+  .api-key-hint a:hover { text-decoration: underline; }
 
   nav { display: flex; gap: 32px; }
   nav a {
@@ -87,18 +139,6 @@
   }
   nav a:hover, nav a.active { color: var(--cream); }
 
-  .nav-badge {
-    background: var(--terracotta);
-    color: white;
-    font-size: 0.65rem;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 20px;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-
-  /* ── MAIN LAYOUT ── */
   main {
     max-width: 1280px;
     margin: 0 auto;
@@ -108,7 +148,6 @@
     gap: 32px;
   }
 
-  /* ── HERO STRIP ── */
   .hero {
     grid-column: 1 / -1;
     background: var(--sage);
@@ -149,11 +188,7 @@
     max-width: 420px;
   }
 
-  .hero-stats {
-    display: flex;
-    gap: 32px;
-    z-index: 1;
-  }
+  .hero-stats { display: flex; gap: 32px; z-index: 1; }
 
   .stat {
     text-align: center;
@@ -179,7 +214,6 @@
     margin-top: 4px;
   }
 
-  /* ── CARDS ── */
   .card {
     background: var(--paper);
     border: 1px solid var(--border);
@@ -204,44 +238,121 @@
 
   .card-body { padding: 20px 24px; }
 
-  /* ── RECIPE SELECTOR ── */
-  .recipe-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+  /* ── RECIPE SEARCH ── */
+  .search-row {
+    display: flex;
+    gap: 8px;
     margin-bottom: 16px;
   }
 
-  .recipe-item {
+  .search-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--sage); }
+  .search-input::placeholder { color: var(--muted); }
+
+  .btn-add-recipe {
+    padding: 10px 18px;
+    background: var(--sage);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-add-recipe:hover { background: #4a6a4e; transform: translateY(-1px); }
+  .btn-add-recipe:disabled { opacity: 0.5; pointer-events: none; }
+
+  /* SUGGESTION CHIPS */
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .suggestion-chip {
+    padding: 5px 12px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .suggestion-chip:hover {
+    border-color: var(--sage);
+    color: var(--sage);
+    background: var(--sage-pale);
+  }
+
+  /* RECIPE CARDS */
+  .recipe-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .recipe-card {
     border: 2px solid var(--border);
     border-radius: 10px;
     padding: 12px 14px;
-    cursor: pointer;
-    transition: all 0.2s;
     background: white;
     position: relative;
+    transition: all 0.2s;
   }
 
-  .recipe-item:hover { border-color: var(--sage); }
+  .recipe-card.loading-card {
+    border-color: var(--sage-pale);
+    background: linear-gradient(90deg, #f0f4f1 25%, #e8ede9 50%, #f0f4f1 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
 
-  .recipe-item.selected {
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .recipe-card.selected {
     border-color: var(--sage);
     background: var(--sage-pale);
   }
 
-  .recipe-item.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    color: var(--sage);
-    font-weight: 700;
-    font-size: 0.85rem;
+  .recipe-card.error-card {
+    border-color: #f0b09a;
+    background: #fff5f2;
   }
+
+  .recipe-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .recipe-card-info { flex: 1; cursor: pointer; }
 
   .recipe-name {
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     margin-bottom: 3px;
   }
 
@@ -263,7 +374,73 @@
     letter-spacing: 0.5px;
   }
 
-  /* ── ALLERGY PILLS ── */
+  .recipe-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toggle-btn {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    background: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    color: var(--sage);
+    transition: all 0.15s;
+    font-weight: 700;
+  }
+
+  .recipe-card.selected .toggle-btn {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: white;
+  }
+
+  .remove-btn {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .remove-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+
+  .ingredient-preview {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .api-badge {
+    font-size: 0.65rem;
+    background: #e8f4ea;
+    color: var(--sage);
+    border: 1px solid #b5d4b9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .loading-text {
+    font-size: 0.8rem;
+    color: var(--muted);
+    padding: 8px 0;
+  }
+
+  /* ALLERGY */
   .allergy-section { margin-top: 8px; }
   .allergy-label {
     font-size: 0.8rem;
@@ -274,11 +451,7 @@
     margin-bottom: 10px;
   }
 
-  .allergy-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  .allergy-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 
   .pill {
     display: flex;
@@ -310,7 +483,6 @@
   }
   .pill.active .pill-dot { background: var(--terracotta); }
 
-  /* ── GENERATE BUTTON ── */
   .btn-generate {
     width: 100%;
     padding: 16px;
@@ -333,10 +505,7 @@
 
   .btn-generate:hover { background: var(--sage); transform: translateY(-1px); }
 
-  .btn-generate.loading {
-    opacity: 0.7;
-    pointer-events: none;
-  }
+  .btn-generate.loading { opacity: 0.7; pointer-events: none; }
 
   .spinner {
     width: 16px; height: 16px;
@@ -348,12 +517,9 @@
   }
 
   .btn-generate.loading .spinner { display: block; }
-
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── SHOPPING LIST ── */
-  .list-section { margin-top: 4px; }
-
+  /* SHOPPING LIST */
   .category-group { margin-bottom: 20px; }
 
   .category-name {
@@ -378,9 +544,7 @@
     transform: translateX(-8px);
   }
 
-  @keyframes slideIn {
-    to { opacity: 1; transform: translateX(0); }
-  }
+  @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 
   .ing-check {
     width: 18px; height: 18px;
@@ -403,25 +567,9 @@
     transition: all 0.2s;
   }
 
-  .ing-name.checked-text {
-    text-decoration: line-through;
-    color: var(--muted);
-  }
-
-  .ing-qty {
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-weight: 400;
-    white-space: nowrap;
-  }
-
-  .ing-price {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--terracotta);
-    min-width: 42px;
-    text-align: right;
-  }
+  .ing-name.checked-text { text-decoration: line-through; color: var(--muted); }
+  .ing-qty { font-size: 0.8rem; color: var(--muted); font-weight: 400; white-space: nowrap; }
+  .ing-price { font-size: 0.82rem; font-weight: 600; color: var(--terracotta); min-width: 42px; text-align: right; }
 
   .consolidated-badge {
     font-size: 0.65rem;
@@ -444,16 +592,10 @@
     font-weight: 600;
   }
 
-  /* ── RIGHT SIDEBAR ── */
+  /* SIDEBAR */
   .sidebar { display: flex; flex-direction: column; gap: 24px; }
 
-  /* ── BUDGET CARD ── */
-  .budget-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
+  .budget-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
 
   .input-group label {
     display: block;
@@ -478,17 +620,9 @@
     outline: none;
   }
 
-  .input-group input:focus, .input-group select:focus {
-    border-color: var(--sage);
-  }
+  .input-group input:focus, .input-group select:focus { border-color: var(--sage); }
 
-  .budget-bar-wrap {
-    background: var(--border);
-    border-radius: 6px;
-    height: 10px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
+  .budget-bar-wrap { background: var(--border); border-radius: 6px; height: 10px; overflow: hidden; margin-bottom: 8px; }
 
   .budget-bar {
     height: 100%;
@@ -500,23 +634,11 @@
 
   .budget-bar.over { background: linear-gradient(90deg, var(--gold), var(--terracotta)); }
 
-  .budget-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.78rem;
-    color: var(--muted);
-  }
-
+  .budget-labels { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); }
   .budget-labels strong { color: var(--ink); }
 
-  /* CHART */
-  .chart-wrap {
-    position: relative;
-    height: 180px;
-    margin-top: 8px;
-  }
+  .chart-wrap { position: relative; height: 180px; margin-top: 8px; }
 
-  /* ── FUZZY MATCHES ── */
   .fuzzy-item {
     background: #fffbf0;
     border: 1px solid #e8d580;
@@ -529,33 +651,13 @@
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-  .fuzzy-arrow {
-    color: var(--gold);
-    margin: 0 6px;
-    font-weight: 700;
-  }
+  .fuzzy-arrow { color: var(--gold); margin: 0 6px; font-weight: 700; }
+  .fuzzy-score { float: right; font-size: 0.7rem; font-weight: 600; color: var(--muted); background: #fef0c0; padding: 2px 6px; border-radius: 4px; }
 
-  .fuzzy-score {
-    float: right;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--muted);
-    background: #fef0c0;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--muted);
-  }
-
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
   .empty-state .emoji { font-size: 3rem; margin-bottom: 12px; }
   .empty-state p { font-size: 0.9rem; }
 
-  /* ── PERFORMANCE INDICATOR ── */
   .perf-bar {
     display: flex;
     align-items: center;
@@ -583,40 +685,7 @@
     50% { opacity: 0.5; transform: scale(0.7); }
   }
 
-  /* ── TAG ── */
-  .tag-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 12px;
-  }
-
-  .tag {
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .tag-tech {
-    background: var(--sage-pale);
-    color: var(--sage);
-  }
-
-  .tag-algo {
-    background: #fef0eb;
-    color: var(--terracotta);
-  }
-
-  /* ── TABS ── */
-  .tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 16px;
-  }
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 16px; }
 
   .tab {
     padding: 8px 16px;
@@ -630,16 +699,16 @@
   }
 
   .tab:hover { color: var(--ink); }
-
-  .tab.active {
-    color: var(--ink);
-    border-bottom-color: var(--ink);
-  }
-
+  .tab.active { color: var(--ink); border-bottom-color: var(--ink); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* RESPONSIVE */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
   @media (max-width: 900px) {
     main { grid-template-columns: 1fr; padding: 20px; }
     .hero { flex-direction: column; gap: 20px; }
@@ -662,42 +731,81 @@
   </nav>
 </header>
 
+<!-- API KEY BAR -->
+<div class="api-key-bar">
+  <span class="api-key-label">🔑 Gemini API Key</span>
+  <input
+    type="password"
+    class="api-key-input"
+    id="api-key-input"
+    placeholder="Paste your Google Gemini API key here (stays in-browser only)"
+    oninput="updateKeyStatus()"
+    autocomplete="off"
+  />
+  <span class="api-key-status missing" id="key-status">Not set</span>
+  <span class="api-key-hint">Get one free at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a></span>
+</div>
+
 <main>
 
-  <!-- HERO -->
   <div class="hero">
     <div class="hero-text">
       <h1>Smart lists.<br>Zero waste.</h1>
-      <p>Select recipes, set your budget, and let the algorithm handle ingredient consolidation, allergy filtering, and price optimization.</p>  
+      <p>Search any recipe, and AI will fetch its ingredients in real time — with consolidation, allergy filtering, and budget optimization built in.</p>
     </div>
     <div class="hero-stats">
       <div class="stat">
-        <div class="stat-num">60+</div>
+        <div class="stat-num">Any</div>
+        <div class="stat-label">Recipe</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">AI</div>
+        <div class="stat-label">Powered</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Live</div>
         <div class="stat-label">Ingredients</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">&lt;0.5s</div>
-        <div class="stat-label">Process Time</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">60%</div>
-        <div class="stat-label">Time Saved</div>
       </div>
     </div>
   </div>
 
-  <!-- LEFT COLUMN -->
+  <!-- LEFT -->
   <div>
-
-    <!-- RECIPE PICKER -->
-    <div class="card" style="margin-bottom: 24px;">
+    <div class="card" style="margin-bottom:24px;">
       <div class="card-header">
-        <div class="card-title">Select Recipes</div>
+        <div class="card-title">Add Recipes</div>
         <span style="font-size:0.8rem;color:var(--muted);" id="recipe-count">0 selected</span>
       </div>
       <div class="card-body">
-        <div class="recipe-grid" id="recipe-grid"></div>
 
+        <!-- Search row -->
+        <div class="search-row">
+          <input
+            type="text"
+            class="search-input"
+            id="recipe-search"
+            placeholder="e.g. Thai Green Curry, Shakshuka, Beef Bourguignon…"
+            onkeydown="if(event.key==='Enter') addRecipe()"
+          />
+          <button class="btn-add-recipe" id="add-btn" onclick="addRecipe()">
+            <span id="add-spinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+            <span id="add-text">+ Add</span>
+          </button>
+        </div>
+
+        <!-- Suggestion chips -->
+        <div class="suggestions" id="suggestions"></div>
+
+        <!-- Recipe list -->
+        <div class="recipe-list" id="recipe-list">
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:0.85rem;">
+            Search for a recipe above, or click a suggestion to get started
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Allergens -->
         <div class="allergy-section">
           <div class="allergy-label">Dietary Restrictions & Allergens</div>
           <div class="allergy-pills" id="allergy-pills"></div>
@@ -720,18 +828,16 @@
         <div id="shopping-list">
           <div class="empty-state">
             <div class="emoji">🛒</div>
-            <p>Select recipes above and click<br><strong>Generate Shopping List</strong></p>
+            <p>Add recipes above and click<br><strong>Generate Shopping List</strong></p>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- RIGHT SIDEBAR -->
+  <!-- SIDEBAR -->
   <div class="sidebar">
 
-    <!-- BUDGET -->
     <div class="card">
       <div class="card-header">
         <div class="card-title">Budget Optimizer</div>
@@ -751,7 +857,6 @@
             </select>
           </div>
         </div>
-
         <div id="budget-display" style="display:none;">
           <div class="budget-bar-wrap">
             <div class="budget-bar" id="budget-bar"></div>
@@ -764,14 +869,12 @@
             <canvas id="budget-chart"></canvas>
           </div>
         </div>
-
         <div id="budget-empty" style="text-align:center;padding:16px 0;color:var(--muted);font-size:0.85rem;">
           Generate a list to see budget breakdown
         </div>
       </div>
     </div>
 
-    <!-- FUZZY MATCH -->
     <div class="card">
       <div class="card-header">
         <div class="card-title">Fuzzy Consolidations</div>
@@ -780,13 +883,12 @@
         <div id="fuzzy-panel">
           <div class="empty-state" style="padding:24px 0;">
             <div class="emoji" style="font-size:2rem;">🔍</div>
-            <p style="font-size:0.8rem;">Duplicate ingredients across recipes<br>will be shown here</p>
+            <p style="font-size:0.8rem;">Duplicate ingredients across recipes will be shown here</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TECH NOTE -->
     <div class="card">
       <div class="card-header">
         <div class="card-title">Algorithm Notes</div>
@@ -799,16 +901,16 @@
         </div>
         <div id="algo" class="tab-panel active">
           <p style="font-size:0.82rem;line-height:1.6;color:#444;">
-            Budget optimizer scores each ingredient by <strong>price-per-unit</strong>, weights user preference (organic, local), and uses a greedy algorithm to maximize value within the budget constraint. Quantity normalization converts all units (oz, g, cups, tbsp) before scoring.
+            Budget optimizer scores each ingredient by <strong>price-per-unit</strong>, weights user preference (organic, local), and uses a greedy algorithm to maximize value within the budget constraint. Quantity normalization converts all units before scoring.
           </p>
           <div class="perf-bar">
             <div class="perf-dot"></div>
-            10 recipes · 60+ ingredients · &lt;0.5s on Flask backend
+            Any recipe · Live ingredients · Real-time optimization
           </div>
         </div>
         <div id="filter" class="tab-panel">
           <p style="font-size:0.82rem;line-height:1.6;color:#444;">
-            Allergens are stored in a Python <strong>set</strong>, enabling O(1) hash map lookups per ingredient token. Ingredient names are tokenized and each token is tested against the allergen set — flagging, not removing, items so users retain full visibility.
+            Allergens are stored in a JavaScript <strong>Set</strong>, enabling O(1) hash map lookups per ingredient token. Ingredient names are tokenized and each token is tested against the allergen set — flagging, not removing, items so users retain full visibility.
           </p>
           <div class="perf-bar">
             <div class="perf-dot"></div>
@@ -817,11 +919,11 @@
         </div>
         <div id="api" class="tab-panel">
           <p style="font-size:0.82rem;line-height:1.6;color:#444;">
-            Flask routes proxy <strong>Spoonacular API</strong> calls server-side (API key never exposed). <strong>FuzzyWuzzy</strong> runs on the backend with a token_sort_ratio threshold of 85 for ingredient matching. Results are cached in <strong>Firebase Firestore</strong> to minimize API calls.
+            Recipe ingredients are fetched live from the <strong>Google Gemini API</strong> (gemini-2.0-flash). A structured JSON prompt with <code>responseMimeType: "application/json"</code> guarantees clean output — no parsing hacks needed. Your key is never stored or sent anywhere except Google.
           </p>
           <div class="perf-bar">
             <div class="perf-dot"></div>
-            Firebase real-time sync · Firestore cache layer
+            Gemini 2.0 Flash · Structured JSON mode · Any recipe worldwide
           </div>
         </div>
       </div>
@@ -831,110 +933,49 @@
 </main>
 
 <script>
-// ─── DATA ───────────────────────────────────────────────────
-const RECIPES = [
-  { id:1, name:"Chicken Stir Fry", servings:4, time:"25 min", tag:"Quick", ingredients:[
-    {name:"chicken breast", qty:"1.5 lbs", price:7.49, cat:"Meat & Seafood"},
-    {name:"broccoli florets", qty:"2 cups", price:2.29, cat:"Produce"},
-    {name:"soy sauce", qty:"3 tbsp", price:1.50, cat:"Pantry"},
-    {name:"garlic", qty:"4 cloves", price:0.50, cat:"Produce"},
-    {name:"ginger", qty:"1 tbsp", price:0.75, cat:"Produce"},
-    {name:"sesame oil", qty:"1 tbsp", price:0.80, cat:"Pantry"},
-    {name:"all-purpose flour", qty:"2 tbsp", price:0.30, cat:"Pantry"},
-  ]},
-  { id:2, name:"Pasta Primavera", servings:4, time:"30 min", tag:"Vegetarian", ingredients:[
-    {name:"penne pasta", qty:"12 oz", price:1.89, cat:"Pantry"},
-    {name:"cherry tomatoes", qty:"1 cup", price:3.49, cat:"Produce"},
-    {name:"zucchini", qty:"2 medium", price:1.99, cat:"Produce"},
-    {name:"garlic", qty:"3 cloves", price:0.38, cat:"Produce"},
-    {name:"olive oil", qty:"3 tbsp", price:1.00, cat:"Pantry"},
-    {name:"parmesan cheese", qty:"1/2 cup", price:2.99, cat:"Dairy"},
-    {name:"flour", qty:"1 tbsp", price:0.15, cat:"Pantry"},
-  ]},
-  { id:3, name:"Beef Tacos", servings:4, time:"20 min", tag:"Family Fav", ingredients:[
-    {name:"ground beef", qty:"1 lb", price:5.99, cat:"Meat & Seafood"},
-    {name:"taco shells", qty:"12 count", price:2.79, cat:"Pantry"},
-    {name:"shredded cheese", qty:"1 cup", price:3.49, cat:"Dairy"},
-    {name:"lettuce", qty:"2 cups", price:1.29, cat:"Produce"},
-    {name:"tomato", qty:"2 medium", price:1.49, cat:"Produce"},
-    {name:"sour cream", qty:"1/2 cup", price:1.99, cat:"Dairy"},
-    {name:"garlic powder", qty:"1 tsp", price:0.25, cat:"Pantry"},
-  ]},
-  { id:4, name:"Greek Salad", servings:4, time:"10 min", tag:"Healthy", ingredients:[
-    {name:"cucumber", qty:"1 large", price:1.29, cat:"Produce"},
-    {name:"cherry tomatoes", qty:"1 cup", price:3.49, cat:"Produce"},
-    {name:"feta cheese", qty:"4 oz", price:3.99, cat:"Dairy"},
-    {name:"kalamata olives", qty:"1/2 cup", price:2.49, cat:"Pantry"},
-    {name:"red onion", qty:"1/4", price:0.40, cat:"Produce"},
-    {name:"olive oil", qty:"2 tbsp", price:0.67, cat:"Pantry"},
-    {name:"lemon juice", qty:"2 tbsp", price:0.50, cat:"Produce"},
-  ]},
-  { id:5, name:"Banana Bread", servings:8, time:"70 min", tag:"Baking", ingredients:[
-    {name:"ripe bananas", qty:"3 large", price:0.89, cat:"Produce"},
-    {name:"all purpose flour", qty:"1.5 cups", price:0.55, cat:"Pantry"},
-    {name:"butter", qty:"1/3 cup", price:1.20, cat:"Dairy"},
-    {name:"sugar", qty:"3/4 cup", price:0.60, cat:"Pantry"},
-    {name:"eggs", qty:"1 large", price:0.45, cat:"Dairy"},
-    {name:"baking soda", qty:"1 tsp", price:0.20, cat:"Pantry"},
-    {name:"vanilla extract", qty:"1 tsp", price:0.55, cat:"Pantry"},
-  ]},
-  { id:6, name:"Lemon Salmon", servings:2, time:"25 min", tag:"Seafood", ingredients:[
-    {name:"salmon fillets", qty:"2 pieces", price:12.99, cat:"Meat & Seafood"},
-    {name:"lemon", qty:"2 medium", price:0.98, cat:"Produce"},
-    {name:"garlic", qty:"2 cloves", price:0.25, cat:"Produce"},
-    {name:"olive oil", qty:"2 tbsp", price:0.67, cat:"Pantry"},
-    {name:"fresh dill", qty:"2 tbsp", price:1.29, cat:"Produce"},
-    {name:"capers", qty:"1 tbsp", price:1.50, cat:"Pantry"},
-  ]},
+// ─── STATE ────────────────────────────────────────────────────
+const SUGGESTIONS = [
+  "Chicken Stir Fry","Pasta Primavera","Beef Tacos","Greek Salad",
+  "Banana Bread","Lemon Salmon","Shakshuka","Thai Green Curry",
+  "Mushroom Risotto","Beef Bourguignon"
 ];
 
 const ALLERGENS = ["gluten","dairy","nuts","eggs","shellfish","soy","fish"];
 
 const ALLERGEN_MAP = {
-  gluten:  ["flour","wheat","pasta","bread","taco shells","soy sauce","baking soda"],
-  dairy:   ["cheese","butter","cream","milk","parmesan","feta","sour cream","shredded cheese"],
-  nuts:    ["almond","peanut","walnut","cashew","sesame"],
-  eggs:    ["egg","eggs"],
-  shellfish:["shrimp","crab","lobster","clam","capers"],
-  soy:     ["soy sauce","tofu","edamame"],
-  fish:    ["salmon","tuna","anchovy","fish"],
+  gluten:  ["flour","wheat","pasta","bread","taco shells","soy sauce","baking soda","tortilla","crumb","cracker","oat","barley","rye"],
+  dairy:   ["cheese","butter","cream","milk","parmesan","feta","sour cream","shredded cheese","yogurt","ricotta","mozzarella","brie","cheddar"],
+  nuts:    ["almond","peanut","walnut","cashew","sesame","pecan","pistachio","hazelnut","macadamia","tahini"],
+  eggs:    ["egg","eggs","mayonnaise","mayo"],
+  shellfish:["shrimp","crab","lobster","clam","scallop","oyster","mussel","prawn"],
+  soy:     ["soy sauce","tofu","edamame","miso","tempeh","soya"],
+  fish:    ["salmon","tuna","anchovy","fish","cod","tilapia","halibut","bass","trout","sardine"],
 };
 
-let selectedRecipes = new Set();
+// { id, name, servings, time, tag, ingredients: [{name, qty, price, cat}], selected: bool }
+let recipes = [];
 let selectedAllergens = new Set();
 let budgetChart = null;
+let recipeIdCounter = 0;
 
-// ─── INIT ────────────────────────────────────────────────────
+// ─── INIT ─────────────────────────────────────────────────────
 function init() {
-  renderRecipes();
+  renderSuggestions();
   renderAllergyPills();
 }
 
-function renderRecipes() {
-  const grid = document.getElementById('recipe-grid');
-  grid.innerHTML = RECIPES.map(r => `
-    <div class="recipe-item" id="rec-${r.id}" onclick="toggleRecipe(${r.id})">
-      <div class="recipe-name">${r.name}</div>
-      <div class="recipe-meta">${r.servings} servings · ${r.time}</div>
-      <span class="recipe-tag">${r.tag}</span>
-    </div>
-  `).join('');
+function renderSuggestions() {
+  document.getElementById('suggestions').innerHTML = SUGGESTIONS.map(s =>
+    `<div class="suggestion-chip" onclick="searchAndAdd('${s}')">${s}</div>`
+  ).join('');
 }
 
 function renderAllergyPills() {
-  const wrap = document.getElementById('allergy-pills');
-  wrap.innerHTML = ALLERGENS.map(a => `
-    <div class="pill" id="pill-${a}" onclick="toggleAllergen('${a}')">
+  document.getElementById('allergy-pills').innerHTML = ALLERGENS.map(a =>
+    `<div class="pill" id="pill-${a}" onclick="toggleAllergen('${a}')">
       <span class="pill-dot"></span>${a.charAt(0).toUpperCase()+a.slice(1)}
-    </div>
-  `).join('');
-}
-
-function toggleRecipe(id) {
-  if (selectedRecipes.has(id)) selectedRecipes.delete(id);
-  else selectedRecipes.add(id);
-  document.getElementById(`rec-${id}`).classList.toggle('selected');
-  document.getElementById('recipe-count').textContent = `${selectedRecipes.size} selected`;
+    </div>`
+  ).join('');
 }
 
 function toggleAllergen(a) {
@@ -950,9 +991,214 @@ function switchTab(el, id) {
   document.getElementById(id).classList.add('active');
 }
 
+// ─── RECIPE ADD ───────────────────────────────────────────────
+async function searchAndAdd(name) {
+  document.getElementById('recipe-search').value = name;
+  await addRecipe();
+}
+
+async function addRecipe() {
+  const input = document.getElementById('recipe-search');
+  const name = input.value.trim();
+  if (!name) return;
+
+  if (!getApiKey()) {
+    alert('Please paste your Gemini API key in the bar at the top first. Get a free key at: https://aistudio.google.com/app/apikey');
+    document.getElementById('api-key-input').focus();
+    return;
+  }
+
+  // Check for duplicate
+  if (recipes.find(r => r.name.toLowerCase() === name.toLowerCase())) {
+    input.value = '';
+    return;
+  }
+
+  // Set loading state
+  const addBtn = document.getElementById('add-btn');
+  const addSpinner = document.getElementById('add-spinner');
+  const addText = document.getElementById('add-text');
+  addBtn.disabled = true;
+  addSpinner.style.display = 'block';
+  addText.textContent = 'Fetching…';
+
+  const tempId = ++recipeIdCounter;
+
+  // Add placeholder card
+  recipes.push({ id: tempId, name, loading: true, selected: false, ingredients: [] });
+  renderRecipeList();
+  input.value = '';
+
+  try {
+    const ingredients = await fetchIngredients(name);
+    const recipeIdx = recipes.findIndex(r => r.id === tempId);
+    if (recipeIdx !== -1) {
+      recipes[recipeIdx] = {
+        id: tempId,
+        name,
+        loading: false,
+        selected: true,
+        servings: ingredients.servings || 4,
+        time: ingredients.cookTime || '30 min',
+        tag: ingredients.tag || 'Recipe',
+        ingredients: ingredients.items
+      };
+    }
+  } catch (err) {
+    const recipeIdx = recipes.findIndex(r => r.id === tempId);
+    if (recipeIdx !== -1) {
+      recipes[recipeIdx].loading = false;
+      recipes[recipeIdx].error = true;
+      recipes[recipeIdx].errorMsg = err.message;
+    }
+    console.error('Failed to fetch recipe:', err);
+  }
+
+  renderRecipeList();
+  updateRecipeCount();
+
+  addBtn.disabled = false;
+  addSpinner.style.display = 'none';
+  addText.textContent = '+ Add';
+}
+
+// ─── GOOGLE GEMINI API ────────────────────────────────────────
+function getApiKey() {
+  return document.getElementById('api-key-input').value.trim();
+}
+
+function updateKeyStatus() {
+  const key = getApiKey();
+  const el = document.getElementById('key-status');
+  if (key.length > 10) {
+    el.textContent = '✓ Key set';
+    el.className = 'api-key-status ok';
+  } else {
+    el.textContent = 'Not set';
+    el.className = 'api-key-status missing';
+  }
+}
+
+async function fetchIngredients(recipeName) {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error('No API key set');
+
+  const prompt = `You are a culinary assistant. Return ingredient data for "${recipeName}" as valid JSON only.
+Do NOT include any markdown, code fences, backticks, or explanation — just the raw JSON object.
+
+Required schema:
+{
+  "servings": 4,
+  "cookTime": "30 min",
+  "tag": "Quick",
+  "items": [
+    { "name": "chicken breast", "qty": "1.5 lbs", "price": 7.49, "cat": "Meat & Seafood" }
+  ]
+}
+
+Rules:
+- tag must be one of: Quick, Vegetarian, Vegan, Healthy, Baking, Seafood, Family Fav, Spicy, Comfort
+- cat must be one of: Produce, Meat & Seafood, Dairy, Pantry, Frozen, Bakery
+- price is a number (USD), name is lowercase
+- Include 6 to 12 ingredients
+- Output ONLY the JSON, nothing else`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    const msg = errData?.error?.message || `HTTP ${response.status}`;
+    throw new Error(msg);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  // Strip any accidental markdown fences
+  const clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  return JSON.parse(clean);
+}
+
+// ─── RENDER RECIPES ────────────────────────────────────────────
+function renderRecipeList() {
+  const list = document.getElementById('recipe-list');
+
+  if (recipes.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:0.85rem;">Search for a recipe above, or click a suggestion to get started</div>`;
+    return;
+  }
+
+  list.innerHTML = recipes.map(r => {
+    if (r.loading) {
+      return `<div class="recipe-card loading-card">
+        <div class="loading-text">⟳ Fetching ingredients for "${r.name}"…</div>
+      </div>`;
+    }
+    if (r.error) {
+      return `<div class="recipe-card error-card">
+        <div class="recipe-card-top">
+          <div class="recipe-card-info">
+            <div class="recipe-name">${r.name}</div>
+            <div class="recipe-meta" style="color:var(--terracotta);margin-bottom:4px;">⚠ Failed to load</div>
+            <div style="font-size:0.75rem;color:#b04020;background:#fde8e0;padding:4px 8px;border-radius:5px;font-family:monospace;">${r.errorMsg || 'Unknown error — check browser console'}</div>
+          </div>
+          <button class="remove-btn" onclick="removeRecipe(${r.id})" title="Remove">✕</button>
+        </div>
+      </div>`;
+    }
+
+    const preview = r.ingredients.slice(0, 5).map(i => i.name).join(', ');
+    return `<div class="recipe-card ${r.selected ? 'selected' : ''}" id="rcard-${r.id}">
+      <div class="recipe-card-top">
+        <div class="recipe-card-info" onclick="toggleRecipe(${r.id})">
+          <div class="recipe-name">${r.name}</div>
+          <div class="recipe-meta">${r.servings} servings · ${r.time} · ${r.ingredients.length} ingredients</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+            <span class="recipe-tag">${r.tag}</span>
+            <span class="api-badge">AI fetched</span>
+          </div>
+        </div>
+        <div class="recipe-card-actions">
+          <div class="toggle-btn" onclick="toggleRecipe(${r.id})">${r.selected ? '✓' : '+'}</div>
+          <button class="remove-btn" onclick="removeRecipe(${r.id})" title="Remove">✕</button>
+        </div>
+      </div>
+      ${r.ingredients.length > 0 ? `<div class="ingredient-preview">${preview}${r.ingredients.length > 5 ? ` +${r.ingredients.length-5} more` : ''}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function toggleRecipe(id) {
+  const r = recipes.find(r => r.id === id);
+  if (!r || r.loading || r.error) return;
+  r.selected = !r.selected;
+  renderRecipeList();
+  updateRecipeCount();
+}
+
+function removeRecipe(id) {
+  recipes = recipes.filter(r => r.id !== id);
+  renderRecipeList();
+  updateRecipeCount();
+}
+
+function updateRecipeCount() {
+  const sel = recipes.filter(r => r.selected).length;
+  document.getElementById('recipe-count').textContent = `${sel} selected`;
+}
+
 // ─── GENERATE ────────────────────────────────────────────────
 function generateList() {
-  if (selectedRecipes.size === 0) {
+  const selected = recipes.filter(r => r.selected && !r.loading && !r.error);
+  if (selected.length === 0) {
     alert('Please select at least one recipe first!');
     return;
   }
@@ -965,11 +1211,11 @@ function generateList() {
     processAndRender();
     btn.classList.remove('loading');
     document.getElementById('btn-text').textContent = '✦ Regenerate List';
-  }, 900);
+  }, 600);
 }
 
 function processAndRender() {
-  const selected = RECIPES.filter(r => selectedRecipes.has(r.id));
+  const selected = recipes.filter(r => r.selected && !r.loading && !r.error);
   const allIngredients = selected.flatMap(r => r.ingredients.map(i => ({...i})));
 
   // FUZZY CONSOLIDATION
@@ -1017,7 +1263,7 @@ function processAndRender() {
     }
   });
 
-  // BUDGET OPTIMIZATION
+  // BUDGET
   const budget = parseFloat(document.getElementById('budget-input').value) || 80;
   const pref = document.getElementById('pref-select').value;
 
@@ -1026,7 +1272,7 @@ function processAndRender() {
     score: ing.price * (pref === 'organic' ? 1.2 : 1)
   })).sort((a,b) => a.score - b.score);
 
-  let totalCost = scored.reduce((s,i) => s + i.price, 0);
+  const totalCost = scored.reduce((s,i) => s + i.price, 0);
 
   renderShoppingList(scored);
   renderFuzzy(fuzzyMatches);
@@ -1053,7 +1299,7 @@ function renderShoppingList(items) {
     cats[i.cat].push(i);
   });
 
-  const catOrder = ["Produce","Meat & Seafood","Dairy","Pantry"];
+  const catOrder = ["Produce","Meat & Seafood","Dairy","Pantry","Frozen","Bakery"];
   const sortedCats = [...new Set([...catOrder, ...Object.keys(cats)])].filter(c => cats[c]);
 
   const html = sortedCats.map(cat => `
@@ -1078,17 +1324,15 @@ function renderShoppingList(items) {
 
 function toggleCheck(el) {
   el.classList.toggle('checked');
-  const nameEl = el.nextElementSibling;
-  nameEl.classList.toggle('checked-text');
+  el.nextElementSibling.classList.toggle('checked-text');
 }
 
 function renderFuzzy(matches) {
   const panel = document.getElementById('fuzzy-panel');
   if (matches.length === 0) {
-    panel.innerHTML = `<div class="empty-state" style="padding:24px 0;"><div class="emoji" style="font-size:2rem;">✓</div><p style="font-size:0.8rem;">No duplicate ingredients found across selected recipes</p></div>`;
+    panel.innerHTML = `<div class="empty-state" style="padding:24px 0;"><div class="emoji" style="font-size:2rem;">✓</div><p style="font-size:0.8rem;">No duplicate ingredients found</p></div>`;
     return;
   }
-
   panel.innerHTML = matches.map(m => `
     <div class="fuzzy-item">
       <span class="fuzzy-score">${m.into[0].score}% match</span>
@@ -1111,15 +1355,12 @@ function renderBudget(total, budget, items) {
   document.getElementById('spent-label').textContent = `$${total.toFixed(2)}`;
   document.getElementById('budget-label').textContent = `$${budget.toFixed(2)}`;
 
-  // Chart
   const catTotals = {};
-  items.forEach(i => {
-    catTotals[i.cat] = (catTotals[i.cat] || 0) + i.price;
-  });
+  items.forEach(i => { catTotals[i.cat] = (catTotals[i.cat] || 0) + i.price; });
 
   const labels = Object.keys(catTotals);
   const data = Object.values(catTotals);
-  const colors = ['#5a7a5e','#8aad8f','#c1633a','#d4a853'];
+  const colors = ['#5a7a5e','#8aad8f','#c1633a','#d4a853','#a8c5ac','#e0956a'];
 
   if (budgetChart) budgetChart.destroy();
 
@@ -1140,18 +1381,9 @@ function renderBudget(total, budget, items) {
       plugins: {
         legend: {
           position: 'right',
-          labels: {
-            font: { family:'DM Sans', size:11 },
-            color: '#7a7468',
-            boxWidth: 12,
-            padding: 10,
-          }
+          labels: { font: { family:'DM Sans', size:11 }, color:'#7a7468', boxWidth:12, padding:10 }
         },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` $${ctx.parsed.toFixed(2)}`
-          }
-        }
+        tooltip: { callbacks: { label: ctx => ` $${ctx.parsed.toFixed(2)}` } }
       },
       cutout: '60%',
     }
